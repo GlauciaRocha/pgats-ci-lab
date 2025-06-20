@@ -3,7 +3,7 @@ name: 'Execução por Deploy'
 
 # Gatilhos
 on:
-  workfow_run:
+  workflow_run:
     workflows: ['Execução Manual']
     types:
       - completed
