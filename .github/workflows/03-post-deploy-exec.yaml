@@ -42,15 +42,15 @@ jobs:
       - name: Executando Testes E2E
         run: yarn run e2e
 
-			- uses: actions/upload-artifact@v4
-				IF: ${{ !CANCELLED()}}
- 			 	with:
-   			 name: relatorio
-   			 path: ./playwright-report
+      - uses: actions/upload-artifact@v4
+        if: ${{ !CANCELLED()}}
+        with:
+          name: relatorio
+          path: ./playwright-report
 
 
 
       
-			- 
+			 
 
 
