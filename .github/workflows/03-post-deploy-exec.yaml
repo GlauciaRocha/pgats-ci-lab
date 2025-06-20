@@ -9,7 +9,7 @@ name: 'Execução por Deploy'
 
 
 on:
-  workfow_run:
+  workflow_run:
    workflows:['Execução Manual']
    types:
       - completed
