@@ -10,9 +10,9 @@ name: 'Execução por Deploy'
 
 on:
   workfow_run:
-   workflows:[Execução Manual]
-   types:
-      -completed
+    workflows:['Execução Manual']
+    types:
+      - completed
 
 # trabalhos/tarefas dentro do pipeline = jobs
 jobs:
@@ -20,6 +20,10 @@ jobs:
   
     #maquina que o job vai executar
     runs-on: ubuntu-latest
+
+    if: ${{github.event.workflow_run.conclusion == 'success' }}
+
+
     # passos do script de build
     steps: 
       # clone do projeto
