@@ -1,0 +1,98 @@
+# CI de Nível 04 - Disparo dos testes dentro do pipe de dev
+name: 'Execução Integrada' # Nome do workflow, visível na aba Actions do GitHub
+
+# Gatilhos: Quando o workflow deve ser executado
+on:
+  workflow_dispatch: # Permite que este workflow seja disparado manualmente pela interface do GitHub
+
+# Trabalhos/tarefas (Jobs) que compõem o workflow
+jobs:
+  # Job de inspeção de código (linting)
+  inspecao: # Nome do job
+    runs-on: ubuntu-latest # O sistema operacional do runner (máquina virtual) onde este job será executado
+
+    steps: # Sequência de passos para este job
+      # Passo 1: Clona o código do seu repositório na máquina do runner
+      - uses: actions/checkout@v4 # Ação pré-definida do GitHub para clonar o repo
+
+      # Passo 2: Instalação do Yarn (gerenciador de pacotes)
+      # Nota: A imagem 'ubuntu-latest' já vem com Node.js e npm.
+      # A instalação global de Yarn pode ser redundante se o yarn já estiver no PATH
+      # ou se for para ser usado localmente via 'yarn install'.
+      - name: Instalando Yarn
+        run: npm install -g yarn # Comando para instalar Yarn globalmente via npm
+
+      # Passo 3: Instalação das dependências do projeto (definidas no seu package.json)
+      - name: Instalando dependências
+        run: yarn # Executa o comando yarn para instalar as dependências do projeto
+
+      # Passo 4: Checagem de padronização do código (linting)
+      # Este passo executa o linter do seu projeto (configurado via 'yarn lint' no package.json)
+      - name: Checando padronizacao do código
+        run: yarn lint # Comando para rodar o linter
+
+  # Job de testes de unidade
+  unidade: # Nome do job
+    runs-on: ubuntu-latest # O sistema operacional do runner para este job
+
+    steps: # Sequência de passos para este job
+      # Passo 1: Clona o código do seu repositório
+      - uses: actions/checkout@v4 # Ação para clonar o repo
+
+      # Passo 2: Instalação do Yarn (gerenciador de pacotes)
+      # Novamente, considere se esta instalação global é realmente necessária
+      # ou se a imagem já fornece o Yarn, para evitar erros de 'EEXIST'.
+      - name: Instalando Yarn
+        run: npm install -g yarn # Comando para instalar Yarn globalmente via npm
+
+      # (A imagem foi cortada aqui, mas o próximo passo provavelmente seria 'Instalando dependências' e 'Executando testes de unidade')
+      # Exemplo de continuação (NÃO ESTÁ NA IMAGEM, MAS É PROVÁVEL):
+      # - name: Instalando dependências
+      #   run: yarn
+      # - name: Executando Testes de Unidade
+      #   run: yarn test:unit # Ou o comando para rodar seus testes de unidade
+
+    e2e-tests: # Nome do job
+  runs-on: ubuntu-latest # O sistema operacional do executor (máquina virtual) onde este job será executado
+
+  steps: # Sequência de passos para este job
+    # Passo: Clona o projeto do seu repositório no executor
+    - uses: actions/checkout@v4
+
+    # Passo: Configuração do ambiente Node.js
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.x # Define a versão do Node.js a ser utilizada (ex: 22.x para a mais recente 22)
+
+    # Passo: Instalação do Yarn (gerenciador de pacotes)
+    # ATENÇÃO: Conforme discutido anteriormente, este passo 'npm install -g yarn'
+    # pode causar o erro 'EEXIST' se o Yarn já estiver presente na imagem do executor.
+    # A Action 'setup-node' geralmente já garante que o Yarn esteja disponível.
+    - name: Instalando Yarn
+      run: npm install -g yarn # Comando para instalar o Yarn globalmente via npm
+
+    # Passo: Instalação das dependências do projeto (definidas no seu package.json)
+    - name: Instalando dependências
+      run: yarn # Executa o comando yarn para instalar as dependências do projeto
+	# passo: instalacao do Playwright
+    - name: Instalando Playwright
+      run: yarn playwright install # Comando para instalar o Playwright e seus navegadores
+
+    # passo: executar os testes e2e
+    - name: Executando Testes E2E
+      run: yarn run e2e # Comando para executar os testes end-to-end do seu projeto
+
+deploy: # Início de um novo job chamado 'deploy'
+  runs-on: ubuntu-latest # O sistema operacional do executor para este job
+  # Este job de 'deploy' geralmente teria mais passos abaixo, como:
+  # - name: Configurar Credenciais de Deploy
+  #   uses: aws-actions/configure-aws-credentials@v3 # Exemplo para AWS
+  #   with:
+  #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #     aws-region: us-east-1
+  # - name: Fazer Deploy da Aplicação
+  #   run: |
+  #     echo "Iniciando deploy..."
+  #     npm run deploy # Ou seu comando de deploy específico
+```
