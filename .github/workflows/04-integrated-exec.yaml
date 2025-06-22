@@ -74,7 +74,7 @@ jobs:
     # Passo: Instalação das dependências do projeto (definidas no seu package.json)
     - name: Instalando dependências
       run: yarn # Executa o comando yarn para instalar as dependências do projeto
-	# passo: instalacao do Playwright
+		# passo: instalacao do Playwright
     - name: Instalando Playwright
       run: yarn playwright install # Comando para instalar o Playwright e seus navegadores
 
@@ -82,17 +82,17 @@ jobs:
     - name: Executando Testes E2E
       run: yarn run e2e # Comando para executar os testes end-to-end do seu projeto
 
-deploy: # Início de um novo job chamado 'deploy'
-  runs-on: ubuntu-latest # O sistema operacional do executor para este job
-  # Este job de 'deploy' geralmente teria mais passos abaixo, como:
-  # - name: Configurar Credenciais de Deploy
-  #   uses: aws-actions/configure-aws-credentials@v3 # Exemplo para AWS
-  #   with:
-  #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #     aws-region: us-east-1
-  # - name: Fazer Deploy da Aplicação
-  #   run: |
-  #     echo "Iniciando deploy..."
-  #     npm run deploy # Ou seu comando de deploy específico
-```
+		deploy: # Início de um novo job chamado 'deploy'
+		runs-on: ubuntu-latest # O sistema operacional do executor para este job
+		# Este job de 'deploy' geralmente teria mais passos abaixo, como:
+		# - name: Configurar Credenciais de Deploy
+		#   uses: aws-actions/configure-aws-credentials@v3 # Exemplo para AWS
+		#   with:
+		#     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+		#     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+		#     aws-region: us-east-1
+		# - name: Fazer Deploy da Aplicação
+		#   run: |
+		#     echo "Iniciando deploy..."
+		#     npm run deploy # Ou seu comando de deploy específico
+	```

@@ -48,8 +48,3 @@ jobs:
         with: # Parâmetros para a ação 'upload-artifact'
           name: relatorio # Nome do artefato que será salvo
           path: ./playwright-report/ # Caminho para os arquivos que serão carregados
-
-      
-			 
-
-
