@@ -42,13 +42,12 @@ jobs:
       - name: Executando Testes E2E
         run: yarn run e2e
 
-      - uses: actions/upload-artifact@v4
-        if: ${{ !CANCELLED()}}
-        with:
-          name: relatorio
-          path: ./playwright-report
-
-
+      - name: Upload de artefatos # Nome descritivo do passo
+        uses: actions/upload-artifact@v4 # Ação do GitHub para fazer upload de artefatos
+        if: ${{ !cancelled() }} # Condição para execução do passo
+        with: # Parâmetros para a ação 'upload-artifact'
+          name: relatorio # Nome do artefato que será salvo
+          path: ./playwright-report/ # Caminho para os arquivos que serão carregados
 
       
 			 
