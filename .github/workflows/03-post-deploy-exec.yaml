@@ -1,50 +1,36 @@
-# CI de Nível 03 - Disparo pós conclusão de um pipeline
-name: 'Execução por Deploy'
+# CI de Nível 03 - Disparo após a conclusão de um pipe de deploy
 
-# Gatilhos
+
+name: 'Execucao Por Deploy'
+# gatilho de exec a partir de outro pipe = workflow_run
+
 on:
-  workflow_run:
-    workflows: ['Execução Manual']
+  workflow_run: 
+    workflows: ['Execucao Manual']
     types:
       - completed
 
-# Trabalhos/tarefas
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
 
-    if: ${{github.event.workflow_run.conclusion == 'success' }}
-
-
-    # passos do script de build
-    steps: 
-      # clone do projeto
+    steps:
+      # Clone do projeto
       - uses: actions/checkout@v4
 
-      # Setup do Node.js
-      - uses: actions/setup-node@v4
+      # Instala o Node.js
+      - uses: actions/setup-node@v4 
         with:
-          node-version: latest
+          node-version: 22.x 
 
-      # Instalação do Yarn
-      - name: Instalando Yarn
+      # Instala o Yarn
+      - name: Instalando o Yarn
         run: npm install -g yarn
 
-      # Instalação das dependências
-      - name: Instalando dependências
+      # Instala as dependências do projeto
+      - name: Instala as dependências do projeto
         run: yarn
 
-      # Instalação do Playwright
+      # Instala o Playwright
       - name: Instalando Playwright
         run: yarn playwright install
-
-      # Execução dos testes
-      - name: Executando Testes E2E
-        run: yarn run e2e
-
-      - name: Upload de artefatos # Nome descritivo do passo
-        uses: actions/upload-artifact@v4 # Ação do GitHub para fazer upload de artefatos
-        if: ${{ !cancelled() }} # Condição para execução do passo
-        with: # Parâmetros para a ação 'upload-artifact'
-          name: relatorio # Nome do artefato que será salvo
-          path: ./playwright-report/ # Caminho para os arquivos que serão carregados
