@@ -27,8 +27,8 @@ jobs:
           node-version: 22.x 
 
       # instala npm
-      - name: Instalando o npm
-        run: npm install 
+      - name: Instalando dependências do projeto
+        run: npm install --force 
 
       # Executa os testes
       - name: Executa os testes E2E
