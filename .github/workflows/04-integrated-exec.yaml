@@ -15,12 +15,13 @@ jobs:
       # Passo 1: Clona o código do seu repositório na máquina do runner
       - uses: actions/checkout@v4 # Ação pré-definida do GitHub para clonar o repo
 
-      # Passo 2: Instalação do Yarn (gerenciador de pacotes)
-      # Nota: A imagem 'ubuntu-latest' já vem com Node.js e npm.
-      # A instalação global de Yarn pode ser redundante se o yarn já estiver no PATH
-      # ou se for para ser usado localmente via 'yarn install'.
-      - name: Instalando Yarn
-        run: npm install -g yarn # Comando para instalar Yarn globalmente via npm
+      # Passo 2: Configuração do ambiente Node.js e Yarn
+      # A action 'setup-node' geralmente já instala o Yarn.
+      # Removendo 'npm install -g yarn' para evitar o erro 'EEXIST'.
+      - name: Configurar Node.js e Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x # Ou 'latest' ou a versão específica que você precisa
 
       # Passo 3: Instalação das dependências do projeto (definidas no seu package.json)
       - name: Instalando dependências
@@ -35,65 +36,78 @@ jobs:
   unidade: # Nome do job
     runs-on: ubuntu-latest # O sistema operacional do runner para este job
 
+    needs: inspecao # Este job só será executado DEPOIS que o job 'inspecao' for concluído com sucesso.
+
     steps: # Sequência de passos para este job
       # Passo 1: Clona o código do seu repositório
       - uses: actions/checkout@v4 # Ação para clonar o repo
 
-      # Passo 2: Instalação do Yarn (gerenciador de pacotes)
-      # Novamente, considere se esta instalação global é realmente necessária
-      # ou se a imagem já fornece o Yarn, para evitar erros de 'EEXIST'.
-      - name: Instalando Yarn
-        run: npm install -g yarn # Comando para instalar Yarn globalmente via npm
+      # Passo 2: Configuração do ambiente Node.js e Yarn
+      # Removendo 'npm install -g yarn' para evitar o erro 'EEXIST'.
+      - name: Configurar Node.js e Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x # Ou 'latest' ou a versão específica que você precisa
 
-      # (A imagem foi cortada aqui, mas o próximo passo provavelmente seria 'Instalando dependências' e 'Executando testes de unidade')
-      # Exemplo de continuação (NÃO ESTÁ NA IMAGEM, MAS É PROVÁVEL):
-      # - name: Instalando dependências
-      #   run: yarn
-      # - name: Executando Testes de Unidade
-      #   run: yarn test:unit # Ou o comando para rodar seus testes de unidade
+      # Passo 3: Instalação das dependências
+      - name: Instalando dependências
+        run: yarn
 
-    e2e-tests: # Nome do job
-  runs-on: ubuntu-latest # O sistema operacional do executor (máquina virtual) onde este job será executado
+      # Passo 4: Executando Testes de Unidade
+      - name: Executando Testes de Unidade
+        run: yarn test:unit # OU o comando real para rodar seus testes de unidade, ex: 'npm test'
 
-  steps: # Sequência de passos para este job
-    # Passo: Clona o projeto do seu repositório no executor
-    - uses: actions/checkout@v4
+  # Job de testes E2E (End-to-End)
+  e2e-tests: # <--- AGORA ESTÁ NO NÍVEL CORRETO (mesmo nível de 'inspecao' e 'unidade')
+    runs-on: ubuntu-latest # O sistema operacional do executor (máquina virtual) onde este job será executado
 
-    # Passo: Configuração do ambiente Node.js
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22.x # Define a versão do Node.js a ser utilizada (ex: 22.x para a mais recente 22)
+    needs: unidade # Este job só será executado DEPOIS que o job 'unidade' for concluído com sucesso.
+    # Adicionado 'headless: true' para evitar o erro 'Missing X server'.
+    # A verificação 'if: ${{ github.event.workflow_run.conclusion == 'success' }}' do seu outro workflow
+    # é mais adequada se este workflow for disparado por outro. Como é 'workflow_dispatch' aqui,
+    # os 'needs' já garantem a ordem e o sucesso dos jobs anteriores.
 
-    # Passo: Instalação do Yarn (gerenciador de pacotes)
-    # ATENÇÃO: Conforme discutido anteriormente, este passo 'npm install -g yarn'
-    # pode causar o erro 'EEXIST' se o Yarn já estiver presente na imagem do executor.
-    # A Action 'setup-node' geralmente já garante que o Yarn esteja disponível.
-    - name: Instalando Yarn
-      run: npm install -g yarn # Comando para instalar o Yarn globalmente via npm
+    steps: # Sequência de passos para este job
+      # Passo: Clona o projeto do seu repositório no executor
+      - uses: actions/checkout@v4
 
-    # Passo: Instalação das dependências do projeto (definidas no seu package.json)
-    - name: Instalando dependências
-      run: yarn # Executa o comando yarn para instalar as dependências do projeto
-		# passo: instalacao do Playwright
-    - name: Instalando Playwright
-      run: yarn playwright install # Comando para instalar o Playwright e seus navegadores
+      # Passo: Configuração do ambiente Node.js
+      - name: Configurar Node.js (para E2E)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x # Define a versão do Node.js a ser utilizada
 
-    # passo: executar os testes e2e
-    - name: Executando Testes E2E
-      run: yarn run e2e # Comando para executar os testes end-to-end do seu projeto
+      # Passo: Instalação das dependências do projeto (definidas no seu package.json)
+      - name: Instalando dependências (para E2E)
+        run: yarn
 
-		deploy: # Início de um novo job chamado 'deploy'
-		runs-on: ubuntu-latest # O sistema operacional do executor para este job
-		# Este job de 'deploy' geralmente teria mais passos abaixo, como:
-		# - name: Configurar Credenciais de Deploy
-		#   uses: aws-actions/configure-aws-credentials@v3 # Exemplo para AWS
-		#   with:
-		#     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-		#     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-		#     aws-region: us-east-1
-		# - name: Fazer Deploy da Aplicação
-		#   run: |
-		#     echo "Iniciando deploy..."
-		#     npm run deploy # Ou seu comando de deploy específico
-    
-	```
+      # Passo: Instalação do Playwright e seus navegadores
+      - name: Instalando Playwright
+        run: yarn playwright install --with-deps # Adicionado '--with-deps' para instalar navegadores
+
+      # Passo: Executar os testes E2E
+      - name: Executando Testes E2E
+        run: yarn run e2e # Comando para executar os testes end-to-end do seu projeto
+        env: # <--- Adicionado para garantir o modo headless se não estiver no playwright.config.js
+          PLAYWRIGHT_HEADLESS: 1
+
+  # Job de deploy
+  deploy: # <--- AGORA ESTÁ NO NÍVEL CORRETO (mesmo nível de 'inspecao', 'unidade', 'e2e-tests')
+    runs-on: ubuntu-latest # O sistema operacional do executor para este job
+
+    needs: e2e-tests # Este job só será executado DEPOIS que o job 'e2e-tests' for concluído com sucesso.
+
+    steps:
+      # Exemplo de passos de deploy. Adapte ao seu ambiente (AWS, Azure, Vercel, Netlify, etc.)
+      - name: Checkout do Código para Deploy
+        uses: actions/checkout@v4
+
+      - name: Exemplo de Passo de Deploy
+        run: |
+          echo "Simulando deploy da aplicação..."
+          # Aqui você colocaria seus comandos de deploy reais, como:
+          # npm run build
+          # aws s3 sync build/ s3://meu-bucket-de-deploy
+          # netlify deploy --prod
+          echo "Deploy concluído!"
+```
