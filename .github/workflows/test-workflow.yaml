@@ -1,7 +1,7 @@
 # CI de N[ivel 01 - Disparo manual a partir de 1 clique
 
 # Nome do nosso pipiline
-name: 'Execucao Manual'
+name: 'Execucao Trabalho Final'
 
 # regras de disparo (gatilhos/triggers)
 # gatilho de exec manual = workflow_dispatch
