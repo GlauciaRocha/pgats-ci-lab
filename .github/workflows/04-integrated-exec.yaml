@@ -110,4 +110,3 @@ jobs:
           # aws s3 sync build/ s3://meu-bucket-de-deploy
           # netlify deploy --prod
           echo "Deploy concluído!"
-```
